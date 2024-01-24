@@ -4,17 +4,23 @@ services:
       context: .
       dockerfile: Dockerfile
     image: "postgres-db-initializer"
-    container_name: ${PG_CONTAINER_NAME}
+    container_name: "initializer"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: ${PGDATA}
+      PGDATA: "/data/db"
     volumes:
-       - db:/data/${PGDATA}
+       - db:/data/db
+       - ${DUMP_FILE_LOCATION}/:/docker-entrypoint-initdb.d/
     ports:
       - "5433:5432"
     restart: unless-stopped
 volumes:
     db:
-      external: true
+      name: ${POSTGRES_DB}
+      driver: local
+      driver_opts:
+       o: bind
+       type: none
+       device: ${LOCAL_DEVICE_PGDATA}
